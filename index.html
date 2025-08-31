@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>THE BDT PREDICTOR V.3 (Advanced Patterns)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: linear-gradient(135deg, #1a1a1a, #2c2c2c);
+      color: #e0e0e0;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+      min-height: 100vh;
+    }
+    .header {
+      font-size: 24px;
+      font-weight: 700;
+      color: #00d4ff;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .switcher {
+      display: flex;
+      border: 2px solid #00d4ff;
+      border-radius: 12px;
+      overflow: hidden;
+      margin: 0 auto 20px;
+      max-width: 300px;
+    }
+    .switcher button {
+      flex: 1;
+      background: #222;
+      color: #00d4ff;
+      padding: 12px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+    .switcher button:hover {
+      background: #00d4ff22;
+    }
+    .switcher button.active {
+      background: #00d4ff;
+      color: #fff;
+    }
+    .card {
+      background: #1c1c1c;
+      border: 2px solid #00d4ff;
+      border-radius: 15px;
+      padding: 20px;
+      margin: 0 auto 20px;
+      max-width: 400px;
+      box-shadow: 0 4px 10px rgba(0, 212, 255, 0.2);
+      transition: transform 0.2s ease;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+    }
+    .prediction-btn {
+      margin: 15px auto;
+      display: block;
+      background: #00d4ff22;
+      color: #00d4ff;
+      border: 2px solid #00d4ff;
+      border-radius: 10px;
+      padding: 15px;
+      font-weight: 600;
+      font-size: 20px;
+      cursor: default;
+      transition: background 0.3s ease;
+    }
+    .prediction-btn:hover {
+      background: #00d4ff44;
+    }
+    #patternBox {
+      color: #b0b0b0;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+    .tab-buttons {
+      display: flex;
+      border: 2px solid #00d4ff;
+      border-radius: 12px;
+      overflow: hidden;
+      margin: 0 auto 20px;
+      max-width: 300px;
+    }
+    .tab-buttons button {
+      flex: 1;
+      background: #222;
+      color: #00d4ff;
+      padding: 12px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+    .tab-buttons button:hover {
+      background: #00d4ff22;
+    }
+    .tab-buttons button.active {
+      background: #00d4ff;
+      color: #fff;
+    }
+    .history-container {
+      border: 2px solid #00d4ff;
+      border-radius: 12px;
+      overflow: hidden;
+      max-width: 600px;
+      margin: 0 auto;
+      background: #1c1c1c;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      font-size: 14px;
+      padding: 12px;
+      border-bottom: 1px solid #333;
+    }
+    th {
+      background: #222;
+      color: #00d4ff;
+      font-weight: 600;
+    }
+    tr:nth-child(even) {
+      background: #252525;
+    }
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .dot.red { background: #ff4d4d; }
+    .dot.green { background: #00ff80; }
+    .dot.violet { background: #cc33ff; }
+    .num.red { color: #ff4d4d; font-weight: 700; }
+    .num.green { color: #00ff80; font-weight: 700; }
+    .num.violet { color: #cc33ff; font-weight: 700; }
+    .status.win { color: #00ff80; font-weight: 700; }
+    .status.loss { color: #ff4d4d; font-weight: 700; }
+
+    /* Responsive Design */
+    @media (max-width: 600px) {
+      .header { font-size: 20px; }
+      .card { padding: 15px; max-width: 90%; }
+      .prediction-btn { font-size: 18px; padding: 12px; }
+      th, td { font-size: 12px; padding: 8px; }
+      .switcher, .tab-buttons { max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">PUBLIC SERVER FOR FREE</div>
+  <div class="switcher">
+    <button id="sizeMode" class="active">Big/Small</button>
+    <button id="colorMode">Color</button>
+  </div>
+  <div class="card">
+    <div id="currentPeriod">Current Period: Loading...</div>
+    <div id="liveTime">Time: --:--:--</div>
+    <div id="predictionBox" class="prediction-btn">Prediction → Analyzing...</div>
+    <div id="confidenceBox">Confidence: --%</div>
+    <div id="patternBox">Pattern: --</div>
+  </div>
+  <div class="tab-buttons">
+    <button id="predTab" class="active">Prediction History</button>
+    <button id="gameTab">Game History</button>
+  </div>
+  <div class="history-container">
+    <table>
+      <thead id="tableHead"></thead>
+      <tbody id="tableBody"><tr><td>Loading...</td></tr></tbody>
+    </table>
+  </div>
+
+  <script>
+    // JavaScript remains unchanged
+    const CURRENT_API = 'https://api.bdg88zf.com/api/webapi/GetGameIssue';
+    const HISTORY_API = 'https://draw.ar-lottery01.com/WinGo/WinGo_1M/GetHistoryIssuePage.json';
+
+    const REQUEST_DATA = {
+      typeId:1, language:0,
+      random:"e7fe6c090da2495ab8290dac551ef1ed",
+      signature:"1F390E2B2D8A55D693E57FD905AE73A7",
+      timestamp:1723726679
+    };
+
+    let mode="size";
+    let predictionHistory=[];
+
+    function getBigSmall(num){ return num>=5?"Big":"Small";}
+    function getColor(num){
+      if([1,3,7,9].includes(num)) return "Green";
+      if([2,4,6,8].includes(num)) return "Red";
+      return "Violet";
+    }
+    function updateLiveTime(){ document.getElementById("liveTime").innerText="Time: "+new Date().toLocaleTimeString('en-GB'); }
+
+    function predict(history) {
+      const data = history.slice(0, 8).map(h => (mode === "size" ? h.size : h.color));
+      if (data.length < 8) {
+        return { text: "Analyzing...", conf: "--", pattern: "Awaiting data" };
+      }
+      if (data[0] === data[3] && data[1] === data[4] && data[2] === data[5] && (data[0] !== data[1] || data[1] !== data[2])) {
+        return { text: data[0], conf: 96, pattern: "Repeating Sequence (ABCABC)" };
+      }
+      if (data[0] === data[1] && data[1] === data[2]) {
+        return { text: data[0], conf: 95, pattern: "Triple Streak (AAA)" };
+      }
+      if (data[0] !== data[1] && data[1] === data[2] && data[2] === data[3]) {
+        return { text: data[1], conf: 93, pattern: "Single with Triple (ABBB)" };
+      }
+      if (data[0] === data[2] && data[1] === data[3] && data[0] !== data[1]) {
+        return { text: data[0], conf: 92, pattern: "Alternating (ABAB)" };
+      }
+      if (data[0] === data[1] && data[2] === data[3] && data[0] !== data[2]) {
+        return { text: data[0], conf: 90, pattern: "Double (AABB)" };
+      }
+      if (data[0] === data[3] && data[1] === data[2] && data[0] !== data[1]) {
+        return { text: data[0], conf: 89, pattern: "Mirror (ABBA)" };
+      }
+      if (data[0] === data[1] && data[2] !== data[0] && data[3] === data[0] && data[4] === data[0]) {
+        return { text: data[2], conf: 88, pattern: "Two-One-Two (AABAA)" };
+      }
+      const counts = data.slice(0, 5).reduce((acc, val) => {
+        acc[val] = (acc[val] || 0) + 1;
+        return acc;
+      }, {});
+      let mostFrequent = "Big";
+      if (Object.keys(counts).length > 0) {
+        mostFrequent = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
+      }
+      if (mode === "size") {
+        const prediction = mostFrequent === "Big" ? "Small" : "Big";
+        return { text: prediction, conf: 75, pattern: "Fallback Rule" };
+      } else {
+        let prediction = "Red";
+        if (mostFrequent === "Red") prediction = "Green";
+        if (mostFrequent === "Green") prediction = "Red";
+        return { text: prediction, conf: 70, pattern: "Fallback Rule" };
+      }
+    }
+
+    async function fetchData(){
+      try{
+        const periodRes=await fetch(CURRENT_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(REQUEST_DATA)});
+        const periodData=await periodRes.json();
+        const period=periodData?.data?.issueNumber||"Unavailable";
+        document.getElementById("currentPeriod").innerText=`Current Period: ${period}`;
+        const res=await fetch(HISTORY_API+'?ts='+Date.now());
+        const data=await res.json();
+        const history=data.data.list.slice(0,20).map(item=>{
+          const num=parseInt(item.number);
+          return {period:item.issueNumber, number:num, size:getBigSmall(num), color:getColor(num)};
+        });
+        const prediction=predict(history);
+        document.getElementById("predictionBox").innerText=`Prediction → ${prediction.text}`;
+        document.getElementById("confidenceBox").innerText=`Confidence: ${prediction.conf}%`;
+        document.getElementById("patternBox").innerText = `Pattern: ${prediction.pattern}`;
+        if(prediction.text!=="Analyzing..." && period!=="Unavailable"){
+          if(!predictionHistory.find(p=>p.period===period)){
+            predictionHistory.unshift({period:period, prediction:prediction.text, actual:"--", status:"Waiting", mode:mode});
+            if(predictionHistory.length>20) predictionHistory.pop();
+          }
+        }
+        predictionHistory.forEach(ph=>{
+          const match=history.find(h=>h.period===ph.period);
+          if(match && ph.status==="Waiting"){
+            ph.actual= ph.mode==="size"?match.size:match.color;
+            ph.status=(ph.prediction===ph.actual)?"Win":"Loss";
+          }
+        });
+        renderTable();
+      }catch(e){
+        document.getElementById("predictionBox").innerText="Prediction Error";
+        console.error(e);
+      }
+    }
+
+    function renderTable(){
+      const head=document.getElementById("tableHead");
+      const body=document.getElementById("tableBody");
+      if(document.getElementById("predTab").classList.contains("active")){
+        head.innerHTML="<tr><th>Period</th><th>Prediction</th><th>Actual</th><th>Status</th></tr>";
+        body.innerHTML="";
+        if(predictionHistory.length===0){ body.innerHTML="<tr><td colspan='4'>No predictions yet</td></tr>"; return;}
+        predictionHistory.forEach(item=>{
+          body.innerHTML+=`
+            <tr>
+              <td>${item.period}</td>
+              <td>${item.prediction}</td>
+              <td>${item.actual}</td>
+              <td class="status ${item.status.toLowerCase()}">${item.status}</td>
+            </tr>`;
+        });
+      }else{
+        head.innerHTML="<tr><th>Period</th><th>Number</th><th>Big/Small</th><th>Color</th></tr>";
+        body.innerHTML="";
+        fetch(HISTORY_API+'?ts='+Date.now()).then(r=>r.json()).then(data=>{
+          const history=data.data.list.slice(0,10).map(item=>{
+            const num=parseInt(item.number);
+            return {period:item.issueNumber, number:num, size:getBigSmall(num), color:getColor(num)};
+          });
+          history.forEach(item=>{
+            const colorClass=item.color.toLowerCase();
+            body.innerHTML+=`
+              <tr>
+                <td>${item.period}</td>
+                <td class="num ${colorClass}">${item.number}</td>
+                <td>${item.size}</td>
+                <td><span class="dot ${colorClass}"></span></td>
+              </tr>`;
+          });
+        });
+      }
+    }
+
+    document.getElementById("sizeMode").onclick=()=>{mode="size";document.getElementById("sizeMode").classList.add("active");document.getElementById("colorMode").classList.remove("active"); fetchData();};
+    document.getElementById("colorMode").onclick=()=>{mode="color";document.getElementById("colorMode").classList.add("active");document.getElementById("sizeMode").classList.remove("active"); fetchData();};
+    document.getElementById("predTab").onclick=()=>{document.getElementById("predTab").classList.add("active");document.getElementById("gameTab").classList.remove("active");renderTable();};
+    document.getElementById("gameTab").onclick=()=>{document.getElementById("gameTab").classList.add("active");document.getElementById("predTab").classList.remove("active");renderTable();};
+
+    setInterval(updateLiveTime,1000);
+    setInterval(fetchData,10000);
+    fetchData(); updateLiveTime();
+  </script>
+</body>
+</html>
